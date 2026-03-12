@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Brisbane Benchtops — Voice Quote</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Outfit:wght@300;400;500&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #141210; }
+    .vq-wrap {
+      min-height: 100vh;
+      background: #141210;
+      color: #f0ede8;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 64px;
+      position: relative;
+    }
+    .vq-wrap::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 20%, rgba(180,155,110,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(120,100,70,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .vq-header { text-align: center; margin-bottom: 56px; }
+    .vq-brand { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 13px; letter-spacing: 6px; text-transform: uppercase; color: #c9b99a; margin-bottom: 12px; }
+    .vq-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(36px, 6vw, 56px); line-height: 1.1; color: #f0ede8; }
+    .vq-title em { font-style: italic; color: #c9b99a; }
+    .vq-sub { margin-top: 16px; font-size: 15px; font-weight: 300; color: #8a7e72; max-width: 420px; line-height: 1.6; }
+    .vq-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,185,154,0.15); border-radius: 4px; width: 100%; max-width: 560px; padding: 40px; }
+    .mic-stage { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+    .mic-outer { position: relative; display: flex; align-items: center; justify-content: center; width: 140px; height: 140px; }
+    .mic-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(201,185,154,0.3); }
+    .mic-ring.pulse { animation: ringPulse 1.4s ease-out infinite; }
+    .mic-ring-2 { position: absolute; inset: -16px; border-radius: 50%; border: 1px solid rgba(201,185,154,0.15); }
+    .mic-ring-2.pulse { animation: ringPulse 1.4s ease-out 0.35s infinite; }
+    .mic-ring-3 { position: absolute; inset: -32px; border-radius: 50%; border: 1px solid rgba(201,185,154,0.07); }
+    .mic-ring-3.pulse { animation: ringPulse 1.4s ease-out 0.7s infinite; }
+    @keyframes ringPulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }
+    .mic-btn { width: 100px; height: 100px; border-radius: 50%; background: #c9b99a; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; position: relative; z-index: 1; }
+    .mic-btn:hover { background: #d4c4aa; transform: scale(1.04); }
+    .mic-btn.recording { background: #c0392b; }
+    .mic-label { font-size: 13px; font-weight: 400; letter-spacing: 3px; text-transform: uppercase; color: #8a7e72; }
+    .mic-label.active { color: #c9b99a; }
+    .transcript-box { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(201,185,154,0.1); border-radius: 3px; padding: 20px; font-size: 15px; font-weight: 300; line-height: 1.7; color: #d4cfc9; min-height: 80px; font-style: italic; }
+    .transcript-placeholder { color: #4a4540; font-style: italic; }
+    .processing-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0; }
+    .spinner { width: 40px; height: 40px; border: 2px solid rgba(201,185,154,0.2); border-top-color: #c9b99a; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .processing-text { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #8a7e72; }
+    .review-stage { width: 100%; }
+    .summary-bar { background: rgba(201,185,154,0.08); border-left: 2px solid #c9b99a; padding: 14px 18px; margin-bottom: 28px; font-size: 14px; color: #c9b99a; font-weight: 300; line-height: 1.5; }
+    .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+    .field-full { grid-column: 1 / -1; }
+    .field-item label { display: block; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8a7e72; margin-bottom: 6px; }
+    .field-item input, .field-item textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(201,185,154,0.15); border-radius: 3px; padding: 10px 12px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 300; color: #f0ede8; outline: none; transition: border-color 0.2s; resize: none; }
+    .field-item input:focus, .field-item textarea:focus { border-color: rgba(201,185,154,0.5); }
+    .field-item input::placeholder, .field-item textarea::placeholder { color: #4a4540; }
+    .btn-row { display: flex; gap: 12px; }
+    .btn-primary { flex: 1; background: #c9b99a; color: #141210; border: none; border-radius: 3px; padding: 14px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: #d4c4aa; }
+    .btn-ghost { background: transparent; color: #8a7e72; border: 1px solid rgba(201,185,154,0.2); border-radius: 3px; padding: 14px 20px; font-family: 'Outfit', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .btn-ghost:hover { border-color: rgba(201,185,154,0.5); color: #c9b99a; }
+    .done-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 20px 0; }
+    .done-icon { width: 64px; height: 64px; border-radius: 50%; border: 1px solid rgba(201,185,154,0.4); display: flex; align-items: center; justify-content: center; color: #c9b99a; }
+    .done-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 28px; color: #f0ede8; }
+    .done-sub { font-size: 14px; font-weight: 300; color: #8a7e72; line-height: 1.6; max-width: 340px; }
+    .error-msg { width: 100%; max-width: 560px; margin-top: 16px; padding: 12px 16px; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); border-radius: 3px; font-size: 13px; color: #e88a7a; font-weight: 300; }
+    .transcript-section { width: 100%; margin-bottom: 20px; }
+    .transcript-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #8a7e72; margin-bottom: 8px; }
+    .divider { width: 40px; height: 1px; background: rgba(201,185,154,0.3); margin: 0 auto 48px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const FIELDS = [
+      { key: "room", label: "Room" },
+      { key: "material", label: "Material" },
+      { key: "colour", label: "Colour / Finish" },
+      { key: "dimensions", label: "Dimensions" },
+      { key: "cutouts", label: "Cutouts" },
+      { key: "edgeProfile", label: "Edge Profile" },
+      { key: "contactName", label: "Your Name" },
+      { key: "phone", label: "Phone" },
+      { key: "specialRequests", label: "Special Requests" },
+    ];
+
+    function VoiceQuote() {
+      const [phase, setPhase] = React.useState("idle");
+      const [transcript, setTranscript] = React.useState("");
+      const [data, setData] = React.useState(null);
+      const [error, setError] = React.useState(null);
+      const [pulseRing, setPulseRing] = React.useState(false);
+      const recognitionRef = React.useRef(null);
+      const finalRef = React.useRef("");
+
+      const AIRTABLE_API_KEY = "PASTE_YOUR_TOKEN_HERE";
+      const AIRTABLE_BASE_ID = "appncShCi0VnwuBKd";
+      const AIRTABLE_TABLE = "Quote Request Form";
+
+      const startRecording = () => {
+        setError(null);
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { setError("Voice input requires Chrome or Edge on desktop, or Safari on iOS."); return; }
+        const rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = "en-AU";
+        finalRef.current = "";
+        rec.onresult = (e) => {
+          let interim = "";
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            if (e.results[i].isFinal) finalRef.current += e.results[i][0].transcript + " ";
+            else interim += e.results[i][0].transcript;
+          }
+          setTranscript(finalRef.current + interim);
+        };
+        rec.onerror = (e) => { setError("Mic error: " + e.error); setPhase("idle"); };
+        recognitionRef.current = rec;
+        rec.start();
+        setPhase("recording");
+        setPulseRing(true);
+      };
+
+      const stopRecording = () => {
+        recognitionRef.current?.stop();
+        setPulseRing(false);
+        setPhase("processing");
+        extract(finalRef.current || transcript);
+      };
+
+      const extract = async (text) => {
+        if (!text.trim()) { setError("No speech detected. Please try again."); setPhase("idle"); return; }
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 1000,
+              system: `You extract structured quote request data from voice transcripts for Brisbane Benchtops, a stone benchtop fabrication company. Return ONLY valid JSON with exactly these keys: room, material, colour, dimensions, cutouts, edgeProfile, contactName, phone, specialRequests, summary. Use null for anything not mentioned. Never invent data.`,
+              messages: [{ role: "user", content: `Voice transcript: "${text}"` }],
+            }),
+          });
+          const json = await res.json();
+          const parsed = JSON.parse(json.content[0].text);
+          setData(parsed);
+          setPhase("review");
+        } catch (err) {
+          setError("Couldn't interpret that — please try again.");
+          setPhase("idle");
+        }
+      };
+
+      const updateField = (key, val) => setData(d => ({ ...d, [key]: val }));
+
+      const submit = async () => {
+        setPhase("submitting");
+        try {
+          await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${AIRTABLE_API_KEY}` },
+            body: JSON.stringify({ fields: {
+              "Room": data.room, "Material": data.material, "Colour": data.colour,
+              "Dimensions": data.dimensions, "Cutouts": data.cutouts, "Edge Profile": data.edgeProfile,
+              "Name": data.contactName, "Phone": data.phone, "Special Requests": data.specialRequests,
+              "Voice Transcript": transcript, "Source": "Voice Quote Tool"
+            }}),
+          });
+          setPhase("done");
+        } catch {
+          setError("Submission failed. Please call us on 07 XXXX XXXX.");
+          setPhase("review");
+        }
+      };
+
+      const reset = () => { setPhase("idle"); setTranscript(""); setData(null); setError(null); finalRef.current = ""; };
+
+      return (
+        <div className="vq-wrap">
+          <header className="vq-header">
+            <p className="vq-brand">Brisbane Benchtops</p>
+            <h1 className="vq-title">Tell us about<br />your <em>project</em></h1>
+            <p className="vq-sub">Press the button and describe your job. We'll handle the rest.</p>
+          </header>
+          <div className="divider" />
+          <div className="vq-card">
+            {phase === "idle" && (
+              <div className="mic-stage">
+                <div className="mic-outer">
+                  <div className="mic-ring" /><div className="mic-ring-2" /><div className="mic-ring-3" />
+                  <button className="mic-btn" onClick={startRecording}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#141210" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                      <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+                    </svg>
+                  </button>
+                </div>
+                <span className="mic-label">Tap to speak</span>
+              </div>
+            )}
+            {phase === "recording" && (
+              <div className="mic-stage">
+                <div className="mic-outer">
+                  <div className={`mic-ring ${pulseRing ? "pulse" : ""}`} />
+                  <div className={`mic-ring-2 ${pulseRing ? "pulse" : ""}`} />
+                  <div className={`mic-ring-3 ${pulseRing ? "pulse" : ""}`} />
+                  <button className="mic-btn recording" onClick={stopRecording}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="#141210"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                  </button>
+                </div>
+                <span className="mic-label active">Listening — tap to stop</span>
+                <div style={{width:"100%"}}>
+                  <div className="transcript-label">Transcript</div>
+                  <div className="transcript-box">{transcript || <span className="transcript-placeholder">Start speaking…</span>}</div>
+                </div>
+              </div>
+            )}
+            {phase === "processing" && (
+              <div className="processing-stage"><div className="spinner" /><span className="processing-text">Interpreting your request</span></div>
+            )}
+            {phase === "review" && data && (
+              <div className="review-stage">
+                {data.summary && <div className="summary-bar">{data.summary}</div>}
+                <div className="fields-grid">
+                  {FIELDS.map(({ key, label }) => (
+                    <div key={key} className={`field-item ${key === "specialRequests" || key === "dimensions" ? "field-full" : ""}`}>
+                      <label>{label}</label>
+                      {key === "specialRequests"
+                        ? <textarea rows={2} value={data[key] || ""} placeholder="None" onChange={e => updateField(key, e.target.value)} />
+                        : <input type="text" value={data[key] || ""} placeholder="Not mentioned" onChange={e => updateField(key, e.target.value)} />
+                      }
+                    </div>
+                  ))}
+                </div>
+                <div className="transcript-section">
+                  <div className="transcript-label">Your original message</div>
+                  <div className="transcript-box" style={{fontSize:"13px",color:"#8a7e72"}}>{transcript}</div>
+                </div>
+                <div className="btn-row">
+                  <button className="btn-ghost" onClick={reset}>Start over</button>
+                  <button className="btn-primary" onClick={submit}>Submit quote request</button>
+                </div>
+              </div>
+            )}
+            {phase === "submitting" && (
+              <div className="processing-stage"><div className="spinner" /><span className="processing-text">Sending your request</span></div>
+            )}
+            {phase === "done" && (
+              <div className="done-stage">
+                <div className="done-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <h2 className="done-title">Request received</h2>
+                <p className="done-sub">We'll be in touch shortly with your quote. Thanks for choosing Brisbane Benchtops.</p>
+                <button className="btn-ghost" onClick={reset} style={{marginTop:8}}>Submit another</button>
+              </div>
+            )}
+          </div>
+          {error && <div className="error-msg">{error}</div>}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<VoiceQuote />);
+  </script>
+</body>
+</html>
